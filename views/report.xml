@@ -1,0 +1,187 @@
+<odoo>
+    <data>
+
+        <!-- reports/report_custom_label.xml -->
+       <template id="studio_report_document_custom">
+            <t t-call="web.html_container">
+                <!-- Recibimos todos los datos del wizard -->
+                <t t-call="web.basic_layout">
+                
+                <!-- Cargamos los registros reales para acceder a sus campos -->
+                <t t-set="partner" t-value="env['res.partner'].browse(partner_id) if partner_id else None"/>
+                <t t-set="partner_invoice" t-value="env['res.partner'].browse(partner_invoice_id) if partner_invoice_id else None"/>
+                <t t-set="product" t-value="env['product.product'].browse(product_id) if product_id else None"/>
+                <t t-set="component" t-value="env['product.product'].browse(component_id) if component_id else None"/>
+                <!-- Iteramos por cantidad: una etiqueta por unidad -->
+                <t t-foreach="range(int(quantity))" t-as="index">
+                    <div class="page" style="font-size:90% !important; height:300px !important; padding: 5px;">
+        
+                        <!-- Zona -->
+                        <div class="mb-0" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                            <strong>
+                                <span t-out="x_studio_zona and x_studio_zona.upper() or ''" t-att-style="'font-size: ' +                                                (len(x_studio_zona or '') &lt;= 14 and '250%' or                                                 len(x_studio_zona or '') &lt;= 25 and '170%' or                                                 '120%') +                                                ' !important; display: inline-block; max-width: 100%;'"/>
+                            </strong>
+                        </div>
+        
+                        <!-- Cliente y facturación -->
+                        <div class="mb0">
+                            <strong>
+                                <t t-if="partner and (not partner_invoice or partner_invoice.name == partner.name or not partner_invoice.name)">
+                                    <span t-out="partner.name" style="font-size:120% !important;"/>
+                                </t>
+                                <t t-elif="partner_invoice and partner">
+                                    <span t-out="partner_invoice.name" style="font-size:120% !important;"/>
+                                    ,<span t-out="partner.name" style="font-size:120% !important;"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-out="partner_invoice.name or partner.name or 'Cliente no definido'" style="font-size:120% !important;"/>
+                                </t>
+                            </strong>
+                        </div>
+        
+                        <!-- Dirección -->
+                        <div class="mt0">
+                            <strong>
+                                <span t-out="partner.street if partner and partner.street else ''" style="font-size:100% !important;"/>
+                                <span t-if="partner and partner.state_id"> - </span>
+                                <span t-out="partner.state_id.name if partner and partner.state_id else ''" style="font-size:100% !important;"/>
+                            </strong>
+                        </div>
+        
+                        <!-- Referencia -->
+                        <div class="mt-0 row">
+                            <strong><span>Ref: </span></strong>
+                            <span t-out="ref or 'N/A'"/>
+                        </div>
+        
+                        <!-- Pedido y fecha -->
+                        <div class="mt-0 row">
+                            <span class="col-4">
+                                <strong><span style="padding-right: 5px;">Pedido: </span></strong>
+                                <span t-out="origin or 'N/A'" style="font-size:16px !important; font-weight:bold;"/>
+                            </span>
+                            <span class="col-2">-</span>
+                            <span class="col-6">
+                                <span>Aprob. </span>
+                                <span t-out="date_order"/>
+                            </span>
+                        </div>
+        
+                        <!-- Descripción del producto -->
+                        <div class="mt-0">
+                            <strong>
+                                <span t-out="product.name"/>
+                                <br/>
+                            </strong>
+                        </div>
+                        
+                        <t t-set="product_lines" t-value="product.bom_ids.bom_line_ids.filtered('product_id') if product.bom_ids else []"/>
+                        <t t-set="unique_templates" t-value="list(set(product_lines.mapped('product_id.product_tmpl_id')))"/>
+    
+                        <t t-set="current_template" t-value="component.product_tmpl_id"/>
+                        
+                        <t t-set="position" t-value="0"/>
+                        <t t-foreach="unique_templates" t-as="tmpl">
+                            <t t-if="tmpl == current_template">
+                                <t t-set="position" t-value="tmpl_index + 1"/>
+                            </t>
+                        </t>
+                        
+                        <!-- Nombre del producto y contador -->
+                        <div class="mt-0" style="font-size:90% !important;">
+                            <span t-out="component.display_name.split('] ')[-1] if product and ']' in component.display_name else (component.display_name if component else '')" style="padding-right: 5px;"/>
+                            <span t-out="position"/>/<span t-out="len(unique_templates)"/>
+                            <div style="font-size:130% !important;">
+                                <strong>Cant: <span t-out="index + 1"/> / <span t-out="quantity"/></strong>
+                            </div>
+        
+                            <!-- Código de barras -->
+                            <t t-if="product and product.barcode">
+                                <div style="text-align: center; margin-top:5px">
+                                    <div t-out="product.barcode" style="padding:0; display: inline-block;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width: 50mm; height: 10mm;'}"/>
+                                    <div class="o_label_name" style="height:2px; background-color: transparent; text-align: center;">
+                                        <span t-out="product.barcode"/>
+                                    </div>
+                                </div>
+                            </t>
+                            <br/><br/>
+                        </div>
+        
+                        <!-- Cliente final -->
+                        <div class="mt-0" style="font-size:120% !important;">
+                            <strong>
+                                <span t-out="x_studio_cliente_final or 'CLIENTE FINAL'"/>
+                            </strong>
+                        </div>
+        
+                    </div>
+                </t>
+                </t>
+            </t>
+        </template>
+
+        <!-- Formulario del Wizard -->
+        <record id="label_wizard_form_view" model="ir.ui.view">
+            <field name="name">custom.client.label.wizard.form</field>
+            <field name="model">custom.client.label.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Imprimir Etiqueta">
+                    <group>
+                        <group>
+                            <field name="available_component_ids" invisible="1"/>
+                            <field name="partner_id" required="1"/>
+                            <field name="partner_invoice_id" />
+                            <field name="x_studio_zona"/>
+                            <field name="x_studio_cliente_final"/>
+                            <field name="date_order"/>
+                        </group>
+                        <group>
+                            <field name="origin"/>
+                            <field name="ref"/>
+                            <field name="product_id" required="1"/>
+                            <field name="component_id" required="1"/>
+                            <field name="quantity" required="1"/>
+                            
+                            
+                        </group>
+
+                    </group>
+                    <footer>
+                        <button name="action_print_label" string="Imprimir Etiqueta" type="object" class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_open_label_wizard" model="ir.actions.act_window">
+            <field name="name">Imprimir Etiqueta</field>
+            <field name="res_model">custom.client.label.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_view_types">form</field>
+        </record>
+        <menuitem
+            id="menu_label_wizard"
+            name="Imprimir Etiqueta Personalizada"
+            parent="stock.menu_stock_adjustments"
+            action="action_open_label_wizard"
+            sequence="10"/>
+        
+        <record id="report_custom_label" model="ir.actions.report">
+            <field name="name">Etiqueta Personalizada</field>
+            <field name="model">custom.client.label.wizard</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">mostrar_info_en_lotes.studio_report_document_custom</field>
+            <field name="print_report_name">'Etiqueta_%s' % object.product_id.name</field>
+        </record>
+
+        <record id="action_open_label_wizard" model="ir.actions.act_window">
+            <field name="name">Imprimir Etiqueta</field>
+            <field name="res_model">custom.client.label.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+    </data>
+</odoo>
