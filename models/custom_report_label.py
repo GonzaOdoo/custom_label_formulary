@@ -35,7 +35,7 @@ class LabelWizard(models.TransientModel):
         date_order_formatted = self.date_order.strftime('%d/%m/%Y') if self.date_order else 'N/A'
         return {
             'type': 'ir.actions.report',
-            'report_name': 'mostrar_info_en_lotes.studio_report_document_custom',
+            'report_name': 'custom_label_formulary.studio_report_document_custom',
             'report_type': 'qweb-pdf',
             'data': {
                 'doc_model': 'custom.client.label.wizard',

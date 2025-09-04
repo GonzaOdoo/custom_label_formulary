@@ -131,9 +131,9 @@
                 <form string="Imprimir Etiqueta">
                     <group>
                         <group>
+                            <field name="partner_id"/>
                             <field name="available_component_ids" invisible="1"/>
                             <field name="partner_invoice_id" domain="[('parent_id','=', partner_id)]"/>
-                            <field name="partner_invoice_id" />
                             <field name="x_studio_zona"/>
                             <field name="x_studio_cliente_final"/>
                             <field name="date_order"/>
@@ -175,7 +175,7 @@
             <field name="name">Etiqueta Personalizada</field>
             <field name="model">custom.client.label.wizard</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">mostrar_info_en_lotes.studio_report_document_custom</field>
+            <field name="report_name">custom_label_formulary.studio_report_document_custom</field>
             <field name="print_report_name">'Etiqueta_%s' % object.product_id.name</field>
         </record>
 
