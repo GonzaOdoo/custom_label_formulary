@@ -14,7 +14,7 @@
                 <t t-set="component" t-value="env['product.product'].browse(component_id) if component_id else None"/>
                 <!-- Iteramos por cantidad: una etiqueta por unidad -->
                 <t t-foreach="range(int(quantity))" t-as="index">
-                    <div class="page" style="font-size:90% !important; height:300px !important; padding: 5px;">
+                    <div class="page" style="font-size:90% !important; height:320px !important; padding: 5px;">
         
                         <!-- Zona -->
                         <div class="mb-0" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
@@ -27,6 +27,9 @@
                         <div class="mb0">
                             <strong>
                                 <t t-if="partner and (not partner_invoice or partner_invoice.name == partner.name or not partner_invoice.name)">
+                                    <span t-if="partner.commercial_company_name != partner.name" style="font-size:120% !important;">
+                                        <span t-out="partner.commercial_company_name"/>,<span/>
+                                    </span>
                                     <span t-out="partner.name" style="font-size:120% !important;"/>
                                 </t>
                                 <t t-elif="partner_invoice and partner">
@@ -96,11 +99,11 @@
                             </div>
         
                             <!-- Código de barras -->
-                            <t t-if="product and product.barcode">
+                            <t t-if="component and component.barcode">
                                 <div style="text-align: center; margin-top:5px">
-                                    <div t-out="product.barcode" style="padding:0; display: inline-block;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width: 50mm; height: 10mm;'}"/>
+                                    <div t-out="component.barcode" style="padding:0; display: inline-block;" t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width: 50mm; height: 10mm;'}"/>
                                     <div class="o_label_name" style="height:2px; background-color: transparent; text-align: center;">
-                                        <span t-out="product.barcode"/>
+                                        <span t-out="component.barcode"/>
                                     </div>
                                 </div>
                             </t>
@@ -129,7 +132,7 @@
                     <group>
                         <group>
                             <field name="available_component_ids" invisible="1"/>
-                            <field name="partner_id" required="1"/>
+                            <field name="partner_invoice_id" domain="[('parent_id','=', partner_id)]"/>
                             <field name="partner_invoice_id" />
                             <field name="x_studio_zona"/>
                             <field name="x_studio_cliente_final"/>
@@ -138,7 +141,7 @@
                         <group>
                             <field name="origin"/>
                             <field name="ref"/>
-                            <field name="product_id" required="1"/>
+                            <field name="product_id" required="1" domain="[('categ_id','not in',[53])]"/>
                             <field name="component_id" required="1"/>
                             <field name="quantity" required="1"/>
                             
